@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantry Inventory</title>
-<script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.2/firebase-app.esm.js';
-        import { getAuth, onAuthStateChanged, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.esm.js';
-        import { getDatabase } from 'https://www.gstatic.com/firebasejs/9.0.2/firebase-database.esm.js';
-  <style>
+    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-auth-compat.js"></script>
+    <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
@@ -28,16 +27,16 @@
 
         li {
             width: 90%;
-            background-color: #e7e7e7;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
-            margin: 5px 0;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 13px;
-            transition: transform 0.3s ease-in-out;
-        }
+    background-color: #e7e7e7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
+    margin: 5px 0; /* Adjust the margin as needed */
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 13px;
+    transition: transform 0.3s ease-in-out;
+}
 
         li:hover {
             transform: scale(1.02);
@@ -113,287 +112,218 @@
         }
 
         .itemDetails {
-            display: flex;
-            flex-direction: column;
-        }
+    display: flex;
+    flex-direction: column;
+  
+}
 
-        .centered {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.buttons {
+    display: flex;
+    align-items: center;
+}
 
-        .buttons {
-            display: flex;
-            align-items: center;
-        }
     </style>
+    <script>
+ const firebaseConfig = {
+  apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
+  authDomain: "pantryinventory-8442b.firebaseapp.com",
+  projectId: "pantryinventory-8442b",
+  storageBucket: "pantryinventory-8442b.appspot.com",
+  messagingSenderId: "703830965424",
+  appId: "1:703830965424:web:ed0a125a1080c0c2088f75",
+  measurementId: "G-8ZD6307EX3"
+};
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = app.database();
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const firebaseConfig = {
-        apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
-        authDomain: "pantryinventory-8442b.firebaseapp.com",
-        projectId: "pantryinventory-8442b",
-        storageBucket: "pantryinventory-8442b.appspot.com",
-        messagingSenderId: "703830965424",
-        appId: "1:703830965424:web:ed0a125a1080c0c2088f75",
-        measurementId: "G-8ZD6307EX3"
-    };
+        function handleFormSubmission(event) {
+            event.preventDefault();
+            const itemName = getValue('itemName');
+            const quantity = getValue('quantity');
+            const category = getValue('category');
+            const newItemRef = database.ref('inventory').push({ itemName, quantity, category });
 
-    // Initialize Firebase
-           const app = firebase.initializeApp(firebaseConfig);
-            const database = app.database();
-            const auth = app.auth();
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    const userId = user.uid;
-                    console.log('User signed in:', userId);
-                    const userInventoryRef = database.ref(`users/${userId}/inventory`);
-
-                    userInventoryRef.once('value').then(snapshot => {
-                        displayItems(snapshot);
-                    }).catch(error => {
-                        console.error('Error fetching inventory:', error);
-                    });
-                } else {
-                    console.log('User signed out');
-                }
-            });
-
-
-            function getCurrentUserId() {
-                const user = auth.currentUser;
-                return user ? user.uid : null;
+            if (quantity === '0') {
+                const groceryList = getById('groceryList');
+                appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
             }
 
-            function handleFormSubmission(event) {
-                event.preventDefault();
-                const userId = getCurrentUserId();
-                if (userId) {
-                    const itemName = getValue('itemName');
-                    const quantity = getValue('quantity');
-                    const category = getValue('category');
-                    const newItemRef = database.ref(`users/${userId}/inventory`).push({
-                        itemName,
-                        quantity,
-                        category
-                    });
-
-                    if (quantity === '0') {
-                        const groceryList = getById('groceryList');
-                        appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
-                    }
-
-                    clearForm();
-                } else {
-                    console.error('User not signed in.');
-                    // Handle the case where the user is not signed in
-                }
-            }
-
-            function displayItems(snapshot, searchQuery = "") {
-                const userId = getCurrentUserId();
-                const inventoryList = getById('inventoryList');
-                inventoryList.innerHTML = "";
-
-                snapshot.child(`users/${userId}/inventory`).forEach(childSnapshot => {
-                    const item = childSnapshot.val();
-                    const itemKey = childSnapshot.key;
-                    if (itemMatchesQuery(item, searchQuery)) {
-                        appendElement(inventoryList, createInventoryListItem(item, itemKey));
-                    }
-                });
-            }
-
-            function itemMatchesQuery(item, searchQuery) {
-                const query = searchQuery.toLowerCase();
-                return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
-            }
-
-    function createInventoryListItem(item, itemKey) {
-        const li = createElement('li', 'inventoryItem');
-        li.innerHTML = `
-            <span class="itemDetails">
-                <span class="itemName">${item.itemName}</span><br>
-                <span class="centered">
-                    <span class="quantity">Qty: ${item.quantity}</span><br>
-                    <span class="category">${item.category}</span>
-                </span>
-            </span>
-            <span class="buttons">
-                <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
-                <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>
-                <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">+</button>
-            </span>
-        `;
-        return li;
-    }
-
-    function createGroceryListItem(itemKey, itemName) {
-        const li = createElement('li', 'groceryItem');
-        li.innerHTML = `
-            <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
-            <label for="${itemKey}">${itemName}</label>
-        `;
-        return li;
-    }
-
-    function appendElement(parent, child) {
-        parent.appendChild(child);
-    }
-
-    function getById(id) {
-        return document.getElementById(id);
-    }
-
-    function getValue(id) {
-        return getById(id).value;
-    }
-
-    function clearForm() {
-        ['itemName', 'quantity', 'category'].forEach(id => getById(id).value = '');
-    }
-
-    function toggleCheckbox(itemKey) {
-        console.log(`Item with key ${itemKey} is ${getById(itemKey).checked ? 'checked' : 'unchecked'}`);
-    }
-
-    function updateQuantity(itemKey, newQuantity) {
-        const userId = getCurrentUserId();
-        database.ref(`users/${userId}/inventory/${itemKey}`).update({ quantity: newQuantity });
-    }
-
-    function decrementQuantity(itemKey) {
-        const userId = getCurrentUserId();
-        const itemRef = database.ref(`users/${userId}/inventory/${itemKey}`);
-        
-        itemRef.once('value').then(snapshot => {
-            const currentQuantity = snapshot.val().quantity;
-            updateQuantity(itemKey, Math.max(parseInt(currentQuantity, 10) - 1, 0));
-        });
-    }
-
-    function incrementQuantity(itemKey) {
-        const userId = getCurrentUserId();
-        const itemRef = database.ref(`users/${userId}/inventory/${itemKey}`);
-        
-        itemRef.once('value').then(snapshot => {
-            const currentQuantity = snapshot.val().quantity;
-            updateQuantity(itemKey, parseInt(currentQuantity, 10) + 1);
-        });
-    }
-
-    function deleteItem(itemKey) {
-        const userId = getCurrentUserId();
-        database.ref(`users/${userId}/inventory/${itemKey}`).remove();
-    }
-
-    function populateCategoryFilterOptions(snapshot) {
-        const categoryFilter = getById('categoryFilter');
-        const categories = ['All']; // Initialize with 'All' as the default option
-
-        snapshot.forEach(childSnapshot => {
-            const category = childSnapshot.val().category;
-            if (!categories.includes(category)) {
-                categories.push(category);
-            }
-        });
-
-        categoryFilter.innerHTML = '';
-
-        categories.forEach(category => {
-            const option = createElement('option', '', category);
-            categoryFilter.appendChild(option);
-        });
-    }
-
-    function filterByCategory(category) {
-        const inventoryList = getById('inventoryList');
-        const items = inventoryList.getElementsByClassName('inventoryItem');
-
-        for (const item of items) {
-            const itemCategory = item.querySelector('.itemDetails .centered .category');
-            const displayedCategory = itemCategory ? itemCategory.textContent.trim() : '';
-
-            item.style.display = category === 'All' || displayedCategory === category ? 'flex' : 'none';
+            clearForm();
         }
-    }
 
-            function signInWithGoogle() {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                auth.signInWithPopup(provider)
-                    .then((result) => {
-                        const user = result.user;
-                        console.log('Google user signed in:', user);
-                    })
-                    .catch((error) => {
-                        console.error('Google sign-in error:', error.code, error.message);
-                    });
-            }
-
-
-
-    function signOut() {
-        auth.signOut()
-            .then(() => {
-                // User signed out successfully
-                console.log('User signed out');
-                // Perform any actions you need after sign-out
-            })
-            .catch((error) => {
-                console.error('Sign-out error:', error);
+        function displayItems(snapshot, searchQuery = "") {
+            const inventoryList = getById('inventoryList');
+            inventoryList.innerHTML = "";
+            snapshot.forEach(childSnapshot => {
+                const item = childSnapshot.val();
+                const itemKey = childSnapshot.key;
+                if (itemMatchesQuery(item, searchQuery)) {
+                    appendElement(inventoryList, createInventoryListItem(item, itemKey));
+                }
             });
+        }
+
+        function itemMatchesQuery(item, searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+        }
+
+        function createInventoryListItem(item, itemKey) {
+    const li = createElement('li', 'inventoryItem');
+    li.innerHTML = `
+        <span class="itemDetails">
+            <span class="itemName">${item.itemName}</span><br>
+            <span class="centered">
+                <span class="quantity">Qty: ${item.quantity}</span><br>
+                <span class="category">${item.category}</span>
+            </span>
+        </span>
+        <span class="buttons">
+            <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
+            <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>
+            <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">+</button>
+        </span>
+    `;
+    return li;
+}
+
+        function createGroceryListItem(itemKey, itemName) {
+            const li = createElement('li', 'groceryItem');
+            li.innerHTML = `
+                <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
+                <label for="${itemKey}">${itemName}</label>
+            `;
+            return li;
+        }
+
+        function appendElement(parent, child) {
+            parent.appendChild(child);
+        }
+
+        function getById(id) {
+            return document.getElementById(id);
+        }
+
+        function getValue(id) {
+            return getById(id).value;
+        }
+
+        function clearForm() {
+            ['itemName', 'quantity', 'category'].forEach(id => getById(id).value = '');
+        }
+
+        function toggleCheckbox(itemKey) {
+            console.log(`Item with key ${itemKey} is ${getById(itemKey).checked ? 'checked' : 'unchecked'}`);
+        }
+
+        function updateQuantity(itemKey, newQuantity) {
+            database.ref(`inventory/${itemKey}`).update({ quantity: newQuantity });
+        }
+
+        function decrementQuantity(itemKey) {
+            const itemRef = database.ref(`inventory/${itemKey}`);
+            itemRef.once('value').then(snapshot => {
+                const currentQuantity = snapshot.val().quantity;
+                updateQuantity(itemKey, Math.max(parseInt(currentQuantity, 10) - 1, 0));
+            });
+        }
+
+        function incrementQuantity(itemKey) {
+            const itemRef = database.ref(`inventory/${itemKey}`);
+            itemRef.once('value').then(snapshot => {
+                const currentQuantity = snapshot.val().quantity;
+                updateQuantity(itemKey, parseInt(currentQuantity, 10) + 1);
+            });
+        }
+
+        function deleteItem(itemKey) {
+            database.ref(`inventory/${itemKey}`).remove();
+        }
+
+        function populateCategoryFilterOptions(snapshot) {
+    const categoryFilter = getById('categoryFilter');
+    const categories = ['All']; // Initialize with 'All' as the default option
+
+    snapshot.forEach(childSnapshot => {
+        const category = childSnapshot.val().category;
+        if (!categories.includes(category)) {
+            categories.push(category);
+        }
+    });
+
+    categoryFilter.innerHTML = '';
+
+    categories.forEach(category => {
+        const option = createElement('option', '', category);
+        categoryFilter.appendChild(option);
+    });
+}
+
+
+
+        function filterByCategory(category) {
+    const inventoryList = getById('inventoryList');
+    const items = inventoryList.getElementsByClassName('inventoryItem');
+
+    for (const item of items) {
+        const itemCategory = item.querySelector('.itemDetails .centered .category');
+        const displayedCategory = itemCategory ? itemCategory.textContent.trim() : '';
+
+        item.style.display = category === 'All' || displayedCategory === category ? 'flex' : 'none';
     }
+}
 
-    function searchItems() {
-        const searchQuery = getValue('search');
-        const categoryFilter = getValue('categoryFilter');
 
-        database.ref('inventory').once('value', snapshot => {
-            displayItems(snapshot, searchQuery);
+
+
+        function searchItems() {
+            const searchQuery = getValue('search');
+            const categoryFilter = getValue('categoryFilter');
+
+            database.ref('inventory').once('value', snapshot => {
+                displayItems(snapshot, searchQuery);
+                populateCategoryFilterOptions(snapshot);
+                displayGroceryList(snapshot);
+                filterByCategory(categoryFilter);
+            });
+        }
+
+        function displayGroceryList(snapshot) {
+            const groceryList = getById('groceryList');
+            groceryList.innerHTML = "";
+            snapshot.forEach(childSnapshot => {
+                const item = childSnapshot.val();
+                const itemKey = childSnapshot.key;
+                if (item.quantity === 0) {
+                    appendElement(groceryList, createGroceryListItem(itemKey, item.itemName));
+                }
+            });
+        }
+        function createElement(tagName, className, textContent = '') {
+    const element = document.createElement(tagName);
+    if (className) {
+        element.className = className;
+    }
+    if (textContent) {
+        element.textContent = textContent;
+    }
+    return element;
+}
+
+        database.ref('inventory').on('value', snapshot => {
+            displayItems(snapshot);
             populateCategoryFilterOptions(snapshot);
             displayGroceryList(snapshot);
-            filterByCategory(categoryFilter);
+            filterByCategory(getValue('categoryFilter'));
         });
-    }
-
-    function displayGroceryList(snapshot) {
-        const groceryList = getById('groceryList');
-        groceryList.innerHTML = "";
-        snapshot.forEach(childSnapshot => {
-            const item = childSnapshot.val();
-            const itemKey = childSnapshot.key;
-            if (item.quantity === 0) {
-                appendElement(groceryList, createGroceryListItem(itemKey, item.itemName));
-            }
-        });
-    }
-
-    function createElement(tagName, className, textContent = '') {
-        const element = document.createElement(tagName);
-        if (className) {
-            element.className = className;
-        }
-        if (textContent) {
-            element.textContent = textContent;
-        }
-        return element;
-    }
-
-    database.ref('inventory').on('value', snapshot => {
-        displayItems(snapshot);
-        populateCategoryFilterOptions(snapshot);
-        displayGroceryList(snapshot);
-        filterByCategory(getValue('categoryFilter'));
-    });
-</script>
-
+    </script>
 </head>
 <body>
-  <button id="googleSignInButton">Sign in with Google</button>
     <h1>Jockisch Pantry</h1>
     <form onsubmit="handleFormSubmission(event)">
         <label for="itemName">Item Name:</label>
@@ -407,7 +337,6 @@
         <button type="button" id="searchButton" onclick="searchItems()">Search</button>
         <button type="submit" class="submit">Add to Pantry</button>
     </form>
-
     <h2>Current Pantry Items</h2>
     <label for="categoryFilter">Filter by Category:</label>
     <select id="categoryFilter" onchange="filterByCategory(this.value)">
