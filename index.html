@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantry Inventory</title>
-  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
+<script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.2/firebase-app.esm.js';
+        import { getAuth, onAuthStateChanged, signInWithPopup } from 'https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.esm.js';
+        import { getDatabase } from 'https://www.gstatic.com/firebasejs/9.0.2/firebase-database.esm.js';
   <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -141,12 +142,12 @@
     };
 
     // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = app.database();
-    const auth = app.auth();  // Initialize Firebase Authentication
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    
-            firebase.auth().onAuthStateChanged(user => {
+ const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            const auth = getAuth(app);
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+            onAuthStateChanged(auth, user => {
                 if (user) {
                     const userId = user.uid;
                     console.log('User signed in:', userId);
