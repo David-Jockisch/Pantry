@@ -127,235 +127,250 @@
             align-items: center;
         }
     </style>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
-            authDomain: "pantryinventory-8442b.firebaseapp.com",
-            projectId: "pantryinventory-8442b",
-            storageBucket: "pantryinventory-8442b.appspot.com",
-            messagingSenderId: "703830965424",
-            appId: "1:703830965424:web:ed0a125a1080c0c2088f75",
-            measurementId: "G-8ZD6307EX3"
-        };
+<script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-auth-compat.js"></script>
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = app.database();
-        const auth = app.auth();  // Initialize Firebase Authentication
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
+        authDomain: "pantryinventory-8442b.firebaseapp.com",
+        projectId: "pantryinventory-8442b",
+        storageBucket: "pantryinventory-8442b.appspot.com",
+        messagingSenderId: "703830965424",
+        appId: "1:703830965424:web:ed0a125a1080c0c2088f75",
+        measurementId: "G-8ZD6307EX3"
+    };
 
-        function handleFormSubmission(event) {
-            event.preventDefault();
-            const userId = getCurrentUserId();
-            const itemName = getValue('itemName');
-            const quantity = getValue('quantity');
-            const category = getValue('category');
-            const newItemRef = database.ref(`users/${userId}/inventory`).push({ itemName, quantity, category });
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = app.database();
+    const auth = app.auth();  // Initialize Firebase Authentication
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-            if (quantity === '0') {
-                const groceryList = getById('groceryList');
-                appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
-            }
-
-            clearForm();
+    function getCurrentUserId() {
+        const user = auth.currentUser;
+        if (user) {
+            return user.uid;
+        } else {
+            // Handle the case where the user is not signed in
+            return null;
         }
+    }
 
-        function displayItems(snapshot, searchQuery = "") {
-            const userId = getCurrentUserId();
-            const inventoryList = getById('inventoryList');
-            inventoryList.innerHTML = "";
+    function handleFormSubmission(event) {
+        event.preventDefault();
+        const userId = getCurrentUserId();
+        const itemName = getValue('itemName');
+        const quantity = getValue('quantity');
+        const category = getValue('category');
+        const newItemRef = database.ref(`users/${userId}/inventory`).push({ itemName, quantity, category });
 
-            snapshot.child(`users/${userId}/inventory`).forEach(childSnapshot => {
-                const item = childSnapshot.val();
-                const itemKey = childSnapshot.key;
-                if (itemMatchesQuery(item, searchQuery)) {
-                    appendElement(inventoryList, createInventoryListItem(item, itemKey));
-                }
-            });
-        }
-
-        function itemMatchesQuery(item, searchQuery) {
-            const query = searchQuery.toLowerCase();
-            return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
-        }
-
-        function createInventoryListItem(item, itemKey) {
-            const li = createElement('li', 'inventoryItem');
-            li.innerHTML = `
-                <span class="itemDetails">
-                    <span class="itemName">${item.itemName}</span><br>
-                    <span class="centered">
-                        <span class="quantity">Qty: ${item.quantity}</span><br>
-                        <span class="category">${item.category}</span>
-                    </span>
-                </span>
-                <span class="buttons">
-                    <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
-                    <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>
-                    <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">+</button>
-                </span>
-            `;
-            return li;
-        }
-
-        function createGroceryListItem(itemKey, itemName) {
-            const li = createElement('li', 'groceryItem');
-            li.innerHTML = `
-                <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
-                <label for="${itemKey}">${itemName}</label>
-            `;
-            return li;
-        }
-
-        function appendElement(parent, child) {
-            parent.appendChild(child);
-        }
-
-        function getById(id) {
-            return document.getElementById(id);
-        }
-
-        function getValue(id) {
-            return getById(id).value;
-        }
-
-        function clearForm() {
-            ['itemName', 'quantity', 'category'].forEach(id => getById(id).value = '');
-        }
-
-        function toggleCheckbox(itemKey) {
-            console.log(`Item with key ${itemKey} is ${getById(itemKey).checked ? 'checked' : 'unchecked'}`);
-        }
-
-        function updateQuantity(itemKey, newQuantity) {
-            const userId = getCurrentUserId();
-            database.ref(`users/${userId}/inventory/${itemKey}`).update({ quantity: newQuantity });
-        }
-
-        function decrementQuantity(itemKey) {
-            const userId = getCurrentUserId();
-            const itemRef = database.ref(`users/${userId}/inventory/${itemKey}`);
-            
-            itemRef.once('value').then(snapshot => {
-                const currentQuantity = snapshot.val().quantity;
-                updateQuantity(itemKey, Math.max(parseInt(currentQuantity, 10) - 1, 0));
-            });
-        }
-
-        function incrementQuantity(itemKey) {
-            const userId = getCurrentUserId();
-            const itemRef = database.ref(`users/${userId}/inventory/${itemKey}`);
-            
-            itemRef.once('value').then(snapshot => {
-                const currentQuantity = snapshot.val().quantity;
-                updateQuantity(itemKey, parseInt(currentQuantity, 10) + 1);
-            });
-        }
-
-        function deleteItem(itemKey) {
-            const userId = getCurrentUserId();
-            database.ref(`users/${userId}/inventory/${itemKey}`).remove();
-        }
-
-        function populateCategoryFilterOptions(snapshot) {
-            const categoryFilter = getById('categoryFilter');
-            const categories = ['All']; // Initialize with 'All' as the default option
-
-            snapshot.forEach(childSnapshot => {
-                const category = childSnapshot.val().category;
-                if (!categories.includes(category)) {
-                    categories.push(category);
-                }
-            });
-
-            categoryFilter.innerHTML = '';
-
-            categories.forEach(category => {
-                const option = createElement('option', '', category);
-                categoryFilter.appendChild(option);
-            });
-        }
-
-        function filterByCategory(category) {
-            const inventoryList = getById('inventoryList');
-            const items = inventoryList.getElementsByClassName('inventoryItem');
-
-            for (const item of items) {
-                const itemCategory = item.querySelector('.itemDetails .centered .category');
-                const displayedCategory = itemCategory ? itemCategory.textContent.trim() : '';
-
-                item.style.display = category === 'All' || displayedCategory === category ? 'flex' : 'none';
-            }
-        }
-
-        function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    // User signed in successfully
-                    const user = result.user;
-                    console.log('Google user signed in:', user);
-                    // Now you can perform actions after sign-in, like displaying inventory, etc.
-                })
-                .catch((error) => {
-                    console.error('Google sign-in error:', error);
-                });
-        }
-
-        function signOut() {
-            auth.signOut()
-                .then(() => {
-                    // User signed out successfully
-                    console.log('User signed out');
-                    // Perform any actions you need after sign-out
-                })
-                .catch((error) => {
-                    console.error('Sign-out error:', error);
-                });
-        }
-
-        function searchItems() {
-            const searchQuery = getValue('search');
-            const categoryFilter = getValue('categoryFilter');
-
-            database.ref('inventory').once('value', snapshot => {
-                displayItems(snapshot, searchQuery);
-                populateCategoryFilterOptions(snapshot);
-                displayGroceryList(snapshot);
-                filterByCategory(categoryFilter);
-            });
-        }
-
-        function displayGroceryList(snapshot) {
+        if (quantity === '0') {
             const groceryList = getById('groceryList');
-            groceryList.innerHTML = "";
-            snapshot.forEach(childSnapshot => {
-                const item = childSnapshot.val();
-                const itemKey = childSnapshot.key;
-                if (item.quantity === 0) {
-                    appendElement(groceryList, createGroceryListItem(itemKey, item.itemName));
-                }
+            appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
+        }
+
+        clearForm();
+    }
+
+    function displayItems(snapshot, searchQuery = "") {
+        const userId = getCurrentUserId();
+        const inventoryList = getById('inventoryList');
+        inventoryList.innerHTML = "";
+
+        snapshot.child(`users/${userId}/inventory`).forEach(childSnapshot => {
+            const item = childSnapshot.val();
+            const itemKey = childSnapshot.key;
+            if (itemMatchesQuery(item, searchQuery)) {
+                appendElement(inventoryList, createInventoryListItem(item, itemKey));
+            }
+        });
+    }
+
+    function itemMatchesQuery(item, searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+    }
+
+    function createInventoryListItem(item, itemKey) {
+        const li = createElement('li', 'inventoryItem');
+        li.innerHTML = `
+            <span class="itemDetails">
+                <span class="itemName">${item.itemName}</span><br>
+                <span class="centered">
+                    <span class="quantity">Qty: ${item.quantity}</span><br>
+                    <span class="category">${item.category}</span>
+                </span>
+            </span>
+            <span class="buttons">
+                <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
+                <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>
+                <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">+</button>
+            </span>
+        `;
+        return li;
+    }
+
+    function createGroceryListItem(itemKey, itemName) {
+        const li = createElement('li', 'groceryItem');
+        li.innerHTML = `
+            <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
+            <label for="${itemKey}">${itemName}</label>
+        `;
+        return li;
+    }
+
+    function appendElement(parent, child) {
+        parent.appendChild(child);
+    }
+
+    function getById(id) {
+        return document.getElementById(id);
+    }
+
+    function getValue(id) {
+        return getById(id).value;
+    }
+
+    function clearForm() {
+        ['itemName', 'quantity', 'category'].forEach(id => getById(id).value = '');
+    }
+
+    function toggleCheckbox(itemKey) {
+        console.log(`Item with key ${itemKey} is ${getById(itemKey).checked ? 'checked' : 'unchecked'}`);
+    }
+
+    function updateQuantity(itemKey, newQuantity) {
+        const userId = getCurrentUserId();
+        database.ref(`users/${userId}/inventory/${itemKey}`).update({ quantity: newQuantity });
+    }
+
+    function decrementQuantity(itemKey) {
+        const userId = getCurrentUserId();
+        const itemRef = database.ref(`users/${userId}/inventory/${itemKey}`);
+        
+        itemRef.once('value').then(snapshot => {
+            const currentQuantity = snapshot.val().quantity;
+            updateQuantity(itemKey, Math.max(parseInt(currentQuantity, 10) - 1, 0));
+        });
+    }
+
+    function incrementQuantity(itemKey) {
+        const userId = getCurrentUserId();
+        const itemRef = database.ref(`users/${userId}/inventory/${itemKey}`);
+        
+        itemRef.once('value').then(snapshot => {
+            const currentQuantity = snapshot.val().quantity;
+            updateQuantity(itemKey, parseInt(currentQuantity, 10) + 1);
+        });
+    }
+
+    function deleteItem(itemKey) {
+        const userId = getCurrentUserId();
+        database.ref(`users/${userId}/inventory/${itemKey}`).remove();
+    }
+
+    function populateCategoryFilterOptions(snapshot) {
+        const categoryFilter = getById('categoryFilter');
+        const categories = ['All']; // Initialize with 'All' as the default option
+
+        snapshot.forEach(childSnapshot => {
+            const category = childSnapshot.val().category;
+            if (!categories.includes(category)) {
+                categories.push(category);
+            }
+        });
+
+        categoryFilter.innerHTML = '';
+
+        categories.forEach(category => {
+            const option = createElement('option', '', category);
+            categoryFilter.appendChild(option);
+        });
+    }
+
+    function filterByCategory(category) {
+        const inventoryList = getById('inventoryList');
+        const items = inventoryList.getElementsByClassName('inventoryItem');
+
+        for (const item of items) {
+            const itemCategory = item.querySelector('.itemDetails .centered .category');
+            const displayedCategory = itemCategory ? itemCategory.textContent.trim() : '';
+
+            item.style.display = category === 'All' || displayedCategory === category ? 'flex' : 'none';
+        }
+    }
+
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
+            .then((result) => {
+                // User signed in successfully
+                const user = result.user;
+                console.log('Google user signed in:', user);
+                // Now you can perform actions after sign-in, like displaying inventory, etc.
+            })
+            .catch((error) => {
+                console.error('Google sign-in error:', error);
             });
-        }
+    }
 
-        function createElement(tagName, className, textContent = '') {
-            const element = document.createElement(tagName);
-            if (className) {
-                element.className = className;
-            }
-            if (textContent) {
-                element.textContent = textContent;
-            }
-            return element;
-        }
+    function signOut() {
+        auth.signOut()
+            .then(() => {
+                // User signed out successfully
+                console.log('User signed out');
+                // Perform any actions you need after sign-out
+            })
+            .catch((error) => {
+                console.error('Sign-out error:', error);
+            });
+    }
 
-        database.ref('inventory').on('value', snapshot => {
-            displayItems(snapshot);
+    function searchItems() {
+        const searchQuery = getValue('search');
+        const categoryFilter = getValue('categoryFilter');
+
+        database.ref('inventory').once('value', snapshot => {
+            displayItems(snapshot, searchQuery);
             populateCategoryFilterOptions(snapshot);
             displayGroceryList(snapshot);
-            filterByCategory(getValue('categoryFilter'));
+            filterByCategory(categoryFilter);
         });
-    </script>
+    }
+
+    function displayGroceryList(snapshot) {
+        const groceryList = getById('groceryList');
+        groceryList.innerHTML = "";
+        snapshot.forEach(childSnapshot => {
+            const item = childSnapshot.val();
+            const itemKey = childSnapshot.key;
+            if (item.quantity === 0) {
+                appendElement(groceryList, createGroceryListItem(itemKey, item.itemName));
+            }
+        });
+    }
+
+    function createElement(tagName, className, textContent = '') {
+        const element = document.createElement(tagName);
+        if (className) {
+            element.className = className;
+        }
+        if (textContent) {
+            element.textContent = textContent;
+        }
+        return element;
+    }
+
+    database.ref('inventory').on('value', snapshot => {
+        displayItems(snapshot);
+        populateCategoryFilterOptions(snapshot);
+        displayGroceryList(snapshot);
+        filterByCategory(getValue('categoryFilter'));
+    });
+</script>
+
 </head>
 <body>
     <button id="googleSignInButton" onclick="signInWithGoogle()">Sign in with Google</button>
