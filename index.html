@@ -151,15 +151,24 @@ firebase.auth().onAuthStateChanged(user => {
         const userId = user.uid;
         console.log('User signed in:', userId);
 
-        // Call functions to display items or perform other actions
-        displayItems(snapshot); // You may need to pass the snapshot or fetch it again here
-        // ...
+        // Fetch the snapshot or use the one you have
+        const userId = getCurrentUserId();
+        const userInventoryRef = database.ref(`users/${userId}/inventory`);
+        
+        userInventoryRef.once('value').then(snapshot => {
+            displayItems(snapshot); // Pass the snapshot to the function
+            // Call other functions or perform actions after sign-in
+            // ...
+        }).catch(error => {
+            console.error('Error fetching inventory:', error);
+        });
     } else {
         // User is signed out
         console.log('User signed out');
         // Perform any actions you need for a signed-out state
     }
 });
+
 
     function getCurrentUserId() {
         const user = auth.currentUser;
@@ -327,8 +336,10 @@ function signInWithGoogle() {
         })
         .catch((error) => {
             console.error('Google sign-in error:', error.code, error.message);
+            // Handle the error here, e.g., display an error message to the user
         });
 }
+
 
 
     function signOut() {
