@@ -395,11 +395,12 @@ function signInWithGoogle() {
         displayGroceryList(snapshot);
         filterByCategory(getValue('categoryFilter'));
     });
+     document.getElementById('googleSignInButton').addEventListener('click', signInWithGoogle);
 </script>
 
 </head>
 <body>
-    <button id="googleSignInButton" onclick="signInWithGoogle()">Sign in with Google</button>
+  <button id="googleSignInButton">Sign in with Google</button>
     <h1>Jockisch Pantry</h1>
     <form onsubmit="handleFormSubmission(event)">
         <label for="itemName">Item Name:</label>
