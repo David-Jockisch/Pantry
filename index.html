@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantry Inventory</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-auth-compat.js"></script>
-    <style>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
+  <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
@@ -130,7 +130,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('googleSignInButton').addEventListener('click', signInWithGoogle);
     const firebaseConfig = {
         apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
         authDomain: "pantryinventory-8442b.firebaseapp.com",
@@ -147,74 +146,71 @@
     const auth = app.auth();  // Initialize Firebase Authentication
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     
-firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-        // User is signed in
-        const userId = user.uid;
-        console.log('User signed in:', userId);
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    const userId = user.uid;
+                    console.log('User signed in:', userId);
+                    const userInventoryRef = database.ref(`users/${userId}/inventory`);
 
-    const userInventoryRef = database.ref(`users/${userId}/inventory`);
-        
-        userInventoryRef.once('value').then(snapshot => {
-            displayItems(snapshot); // Pass the snapshot to the function
-            // Call other functions or perform actions after sign-in
-            // ...
-        }).catch(error => {
-            console.error('Error fetching inventory:', error);
-        });
-    } else {
-        // User is signed out
-        console.log('User signed out');
-        // Perform any actions you need for a signed-out state
-    }
-});
+                    userInventoryRef.once('value').then(snapshot => {
+                        displayItems(snapshot);
+                    }).catch(error => {
+                        console.error('Error fetching inventory:', error);
+                    });
+                } else {
+                    console.log('User signed out');
+                }
+            });
 
 
-    function getCurrentUserId() {
-        const user = auth.currentUser;
-        if (user) {
-            return user.uid;
-        } else {
-            // Handle the case where the user is not signed in
-            return null;
-        }
-    }
-
-    function handleFormSubmission(event) {
-        event.preventDefault();
-        const userId = getCurrentUserId();
-        const itemName = getValue('itemName');
-        const quantity = getValue('quantity');
-        const category = getValue('category');
-        const newItemRef = database.ref(`users/${userId}/inventory`).push({ itemName, quantity, category });
-
-        if (quantity === '0') {
-            const groceryList = getById('groceryList');
-            appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
-        }
-
-        clearForm();
-    }
-
-    function displayItems(snapshot, searchQuery = "") {
-        const userId = getCurrentUserId();
-        const inventoryList = getById('inventoryList');
-        inventoryList.innerHTML = "";
-        console.log('Current User ID:', userId);
-
-        snapshot.child(`users/${userId}/inventory`).forEach(childSnapshot => {
-            const item = childSnapshot.val();
-            const itemKey = childSnapshot.key;
-            if (itemMatchesQuery(item, searchQuery)) {
-                appendElement(inventoryList, createInventoryListItem(item, itemKey));
+            function getCurrentUserId() {
+                const user = auth.currentUser;
+                return user ? user.uid : null;
             }
-        });
-    }
 
-    function itemMatchesQuery(item, searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
-    }
+            function handleFormSubmission(event) {
+                event.preventDefault();
+                const userId = getCurrentUserId();
+                if (userId) {
+                    const itemName = getValue('itemName');
+                    const quantity = getValue('quantity');
+                    const category = getValue('category');
+                    const newItemRef = database.ref(`users/${userId}/inventory`).push({
+                        itemName,
+                        quantity,
+                        category
+                    });
+
+                    if (quantity === '0') {
+                        const groceryList = getById('groceryList');
+                        appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
+                    }
+
+                    clearForm();
+                } else {
+                    console.error('User not signed in.');
+                    // Handle the case where the user is not signed in
+                }
+            }
+
+            function displayItems(snapshot, searchQuery = "") {
+                const userId = getCurrentUserId();
+                const inventoryList = getById('inventoryList');
+                inventoryList.innerHTML = "";
+
+                snapshot.child(`users/${userId}/inventory`).forEach(childSnapshot => {
+                    const item = childSnapshot.val();
+                    const itemKey = childSnapshot.key;
+                    if (itemMatchesQuery(item, searchQuery)) {
+                        appendElement(inventoryList, createInventoryListItem(item, itemKey));
+                    }
+                });
+            }
+
+            function itemMatchesQuery(item, searchQuery) {
+                const query = searchQuery.toLowerCase();
+                return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+            }
 
     function createInventoryListItem(item, itemKey) {
         const li = createElement('li', 'inventoryItem');
@@ -325,20 +321,17 @@ firebase.auth().onAuthStateChanged(user => {
         }
     }
 
-function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-        .then((result) => {
-            // User signed in successfully
-            const user = result.user;
-            console.log('Google user signed in:', user);
-            // Now you can perform actions after sign-in, like displaying inventory, etc.
-        })
-        .catch((error) => {
-            console.error('Google sign-in error:', error.code, error.message);
-            // Handle the error here, e.g., display an error message to the user
-        });
-}
+            function signInWithGoogle() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        const user = result.user;
+                        console.log('Google user signed in:', user);
+                    })
+                    .catch((error) => {
+                        console.error('Google sign-in error:', error.code, error.message);
+                    });
+            }
 
 
 
