@@ -129,6 +129,8 @@
     </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('googleSignInButton').addEventListener('click', signInWithGoogle);
     const firebaseConfig = {
         apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
         authDomain: "pantryinventory-8442b.firebaseapp.com",
@@ -150,6 +152,8 @@ firebase.auth().onAuthStateChanged(user => {
         // User is signed in
         const userId = user.uid;
         console.log('User signed in:', userId);
+
+    const userInventoryRef = database.ref(`users/${userId}/inventory`);
         
         userInventoryRef.once('value').then(snapshot => {
             displayItems(snapshot); // Pass the snapshot to the function
@@ -391,7 +395,6 @@ function signInWithGoogle() {
         displayGroceryList(snapshot);
         filterByCategory(getValue('categoryFilter'));
     });
-     document.getElementById('googleSignInButton').addEventListener('click', signInWithGoogle);
 </script>
 
 </head>
