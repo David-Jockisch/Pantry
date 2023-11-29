@@ -142,12 +142,12 @@
     };
 
     // Initialize Firebase
- const app = initializeApp(firebaseConfig);
-            const database = getDatabase(app);
-            const auth = getAuth(app);
+           const app = firebase.initializeApp(firebaseConfig);
+            const database = app.database();
+            const auth = app.auth();
             auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-            onAuthStateChanged(auth, user => {
+            auth.onAuthStateChanged(user => {
                 if (user) {
                     const userId = user.uid;
                     console.log('User signed in:', userId);
