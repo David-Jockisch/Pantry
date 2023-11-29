@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #273c75;
+            color: white;
+        }
+
+        form {
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        label, input, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+    <script>
+        // Your Firebase configuration here
+const firebaseConfig = {
+  apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
+  authDomain: "pantryinventory-8442b.firebaseapp.com",
+  projectId: "pantryinventory-8442b",
+  storageBucket: "pantryinventory-8442b.appspot.com",
+  messagingSenderId: "703830965424",
+  appId: "1:703830965424:web:ed0a125a1080c0c2088f75",
+  measurementId: "G-8ZD6307EX3"
+};
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = app.auth();
+
+        function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // User signed up successfully
+                    const user = userCredential.user;
+                    alert(`User signed up successfully: ${user.email}`);
+                })
+                .catch((error) => {
+                    console.error(`Error signing up: ${error.message}`);
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>User Registration</h1>
+    <form>
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <button type="button" onclick="signUp()">Register</button>
+    </form>
+</body>
+</html>
