@@ -144,6 +144,22 @@
     const database = app.database();
     const auth = app.auth();  // Initialize Firebase Authentication
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        // User is signed in
+        const userId = user.uid;
+        console.log('User signed in:', userId);
+
+        // Call functions to display items or perform other actions
+        displayItems(snapshot); // You may need to pass the snapshot or fetch it again here
+        // ...
+    } else {
+        // User is signed out
+        console.log('User signed out');
+        // Perform any actions you need for a signed-out state
+    }
+});
 
     function getCurrentUserId() {
         const user = auth.currentUser;
@@ -175,6 +191,7 @@
         const userId = getCurrentUserId();
         const inventoryList = getById('inventoryList');
         inventoryList.innerHTML = "";
+        console.log('Current User ID:', userId);
 
         snapshot.child(`users/${userId}/inventory`).forEach(childSnapshot => {
             const item = childSnapshot.val();
