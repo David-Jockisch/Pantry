@@ -150,10 +150,6 @@ firebase.auth().onAuthStateChanged(user => {
         // User is signed in
         const userId = user.uid;
         console.log('User signed in:', userId);
-
-        // Fetch the snapshot or use the one you have
-        const userId = getCurrentUserId();
-        const userInventoryRef = database.ref(`users/${userId}/inventory`);
         
         userInventoryRef.once('value').then(snapshot => {
             displayItems(snapshot); // Pass the snapshot to the function
