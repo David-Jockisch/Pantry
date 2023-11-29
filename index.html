@@ -316,19 +316,20 @@ firebase.auth().onAuthStateChanged(user => {
         }
     }
 
-    function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                // User signed in successfully
-                const user = result.user;
-                console.log('Google user signed in:', user);
-                // Now you can perform actions after sign-in, like displaying inventory, etc.
-            })
-            .catch((error) => {
-                console.error('Google sign-in error:', error);
-            });
-    }
+function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            // User signed in successfully
+            const user = result.user;
+            console.log('Google user signed in:', user);
+            // Now you can perform actions after sign-in, like displaying inventory, etc.
+        })
+        .catch((error) => {
+            console.error('Google sign-in error:', error.code, error.message);
+        });
+}
+
 
     function signOut() {
         auth.signOut()
