@@ -4,123 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pantry Inventory</title>
-
-    <!-- Add Firebase SDK (UMD format) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.2/firebase-auth-compat.js"></script>
-
     <style>
-       
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
             background-color: #273c75;
-            color: White;
-
+            color: white;
         }
 
         form {
             margin-bottom: 20px;
         }
 
-        #inventoryList, #groceryList {
-            list-style-type:none;
+        ul {
+            list-style-type: none;
             padding: 0;
-            color:#2f3640;
+            color: #2f3640;
         }
 
-        .inventoryItem, .groceryItem {
-            background-color: #e7e7e7;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
-            margin: 10px 0;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 13px;
-            transition: transform 0.3s ease-in-out;
-        }
+        li {
+            width: 90%;
+    background-color: #e7e7e7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
+    margin: 5px 0; /* Adjust the margin as needed */
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 13px;
+    transition: transform 0.3s ease-in-out;
+}
 
-        .inventoryItem:hover, .groceryItem:hover {
+        li:hover {
             transform: scale(1.02);
         }
 
-        .quantityButton, .deleteButton {
+        button {
             cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .quantityButton, .deleteButton {
             background-color: #34ace0;
             color: #2f3640;
-            border: none;
             padding: 8px 15px;
-            border-radius: 10px;
             margin-right: 5px;
-            transition: background-color 0.3s ease-in-out;
         }
 
         .quantityButton:hover, .deleteButton:hover {
             background-color: #45a049;
         }
 
-        /* Style for the checkbox */
-        input[type="checkbox"] {
-            margin-right: 8px;
+        .submit, #searchButton {
+            background-color: #3498db;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease-in-out;
         }
 
-    .submit {
-    background-color: #3498db;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease-in-out;
-    }
+        .submit:hover, #searchButton:hover {
+            background-color: #2980b9;
+        }
 
-/* Media query for smaller screens */
-@media screen and (max-width: 600px) {
-    body {
-        max-width: none;
-        margin: 20px;
-    }
+        @media screen and (max-width: 600px) {
+            body {
+                max-width: none;
+                margin: 20px;
+            }
 
-    .inventoryItem, .groceryItem {
-        flex-direction: column;
-    }
+            li {
+                flex-direction: column;
+            }
 
-    .quantityButton, .deleteButton {
-        margin-top: 10px;
-    }
+            .quantityButton, .deleteButton {
+                margin: 5px;
+            }
 
-    /* Stack entry boxes in a column */
-    input[type="text"], input[type="number"], select {
-        width: 100%; /* Set width to 100% to ensure they take up the full width of the container */
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        font-size: 16px;
-        margin-right: 20px;
-    }
+            input, select {
+                width: 90%;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                font-size: 16px;
+                margin-right: 20px;
+            }
+        }
+
+        select {
+            appearance: none;
+            padding-right: 30px;
+        }
+
+        select option {
+            background-color: #ffffff;
+            color: #494949;
+        }
+
+        .itemDetails {
+    display: flex;
+    flex-direction: column;
+  
 }
 
-    select {
-        appearance: none; /* Remove default arrow in some browsers */
-        padding-right: 30px; /* Adjust the padding to make space for the arrow */
-    }
+.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.buttons {
+    display: flex;
+    align-items: center;
+}
 
-    /* Optional: Style the dropdown options */
-    select option {
-        background-color: #ffffff;
-        color: #494949;
-    }
-        
     </style>
-
     <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
+ const firebaseConfig = {
   apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
   authDomain: "pantryinventory-8442b.firebaseapp.com",
   projectId: "pantryinventory-8442b",
@@ -129,207 +138,211 @@
   appId: "1:703830965424:web:ed0a125a1080c0c2088f75",
   measurementId: "G-8ZD6307EX3"
 };
-
-
-        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = app.database();
 
-        // Function to handle form submission
         function handleFormSubmission(event) {
             event.preventDefault();
+            const itemName = getValue('itemName');
+            const quantity = getValue('quantity');
+            const category = getValue('category');
+            const newItemRef = database.ref('inventory').push({ itemName, quantity, category });
 
-            // Get form data
-            const itemName = document.getElementById('itemName').value;
-            const quantity = document.getElementById('quantity').value;
-            const category = document.getElementById('category').value;
-
-            // Add item to the database
-            const newItemRef = database.ref('inventory').push({
-                itemName: itemName,
-                quantity: quantity,
-                category: category,
-            });
-
-            // Check if the quantity is 0, add to the grocery list
             if (quantity === '0') {
-                const groceryList = document.getElementById('groceryList');
-                const listItem = document.createElement('li');
-                listItem.className = 'groceryItem';
-                listItem.innerHTML = `
-                    <input type="checkbox" id="${newItemRef.key}" onchange="toggleCheckbox('${newItemRef.key}')" />
-                    <label for="${newItemRef.key}">${itemName}</label>
-                `;
-                groceryList.appendChild(listItem);
+                const groceryList = getById('groceryList');
+                appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
             }
 
-            // Clear the form for the next entry
-            document.getElementById('itemName').value = '';
-            document.getElementById('quantity').value = '';
-            document.getElementById('category').value = '';
+            clearForm();
         }
 
-        // Function to display items
-        function displayItems(snapshot) {
-            const inventoryList = document.getElementById('inventoryList');
-            inventoryList.innerHTML = ""; // Clear existing items
-
-            snapshot.forEach(function(childSnapshot) {
+        function displayItems(snapshot, searchQuery = "") {
+            const inventoryList = getById('inventoryList');
+            inventoryList.innerHTML = "";
+            snapshot.forEach(childSnapshot => {
                 const item = childSnapshot.val();
                 const itemKey = childSnapshot.key;
-
-                const listItem = document.createElement('li');
-                listItem.className = 'inventoryItem';
-                listItem.innerHTML = `
-                    <span>${item.itemName}</span>
-                    <span class="quantity">${item.quantity}</span>
-                    <span class="category">${item.category}</span>
-                    <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">Increase</button>
-                    <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">Decrease</button>
-                    <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
-                `;
-                inventoryList.appendChild(listItem);
-            });
-        }
-
-        // Function to display items with quantity 0 in the grocery list
-        function displayGroceryList(snapshot) {
-            const groceryList = document.getElementById('groceryList');
-            groceryList.innerHTML = ""; // Clear existing grocery list items
-
-            snapshot.forEach(function(childSnapshot) {
-                const item = childSnapshot.val();
-                const itemKey = childSnapshot.key;
-
-                if (item.quantity === 0) {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'groceryItem';
-                    listItem.innerHTML = `
-                        <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')" />
-                        <label for="${itemKey}">${item.itemName}</label>
-                    `;
-                    groceryList.appendChild(listItem);
+                if (itemMatchesQuery(item, searchQuery)) {
+                    appendElement(inventoryList, createInventoryListItem(item, itemKey));
                 }
             });
         }
 
-        // Function to toggle the checkbox state
-        function toggleCheckbox(itemKey) {
-            const checkbox = document.getElementById(itemKey);
-            const isChecked = checkbox.checked;
-
-            // You can add logic here to handle the checkbox state as needed
-            console.log(`Item with key ${itemKey} is ${isChecked ? 'checked' : 'unchecked'}`);
+        function itemMatchesQuery(item, searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return item.itemName.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
         }
 
-        // Function to decrement the quantity
+        function createInventoryListItem(item, itemKey) {
+    const li = createElement('li', 'inventoryItem');
+    li.innerHTML = `
+        <span class="itemDetails">
+            <span class="itemName">${item.itemName}</span><br>
+            <span class="centered">
+                <span class="quantity">Qty: ${item.quantity}</span><br>
+                <span class="category">${item.category}</span>
+            </span>
+        </span>
+        <span class="buttons">
+            <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
+            <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>
+            <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">+</button>
+        </span>
+    `;
+    return li;
+}
+
+        function createGroceryListItem(itemKey, itemName) {
+            const li = createElement('li', 'groceryItem');
+            li.innerHTML = `
+                <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
+                <label for="${itemKey}">${itemName}</label>
+            `;
+            return li;
+        }
+
+        function appendElement(parent, child) {
+            parent.appendChild(child);
+        }
+
+        function getById(id) {
+            return document.getElementById(id);
+        }
+
+        function getValue(id) {
+            return getById(id).value;
+        }
+
+        function clearForm() {
+            ['itemName', 'quantity', 'category'].forEach(id => getById(id).value = '');
+        }
+
+        function toggleCheckbox(itemKey) {
+            console.log(`Item with key ${itemKey} is ${getById(itemKey).checked ? 'checked' : 'unchecked'}`);
+        }
+
+        function updateQuantity(itemKey, newQuantity) {
+            database.ref(`inventory/${itemKey}`).update({ quantity: newQuantity });
+        }
+
         function decrementQuantity(itemKey) {
             const itemRef = database.ref(`inventory/${itemKey}`);
-            itemRef.once('value').then(function(snapshot) {
+            itemRef.once('value').then(snapshot => {
                 const currentQuantity = snapshot.val().quantity;
-                const newQuantity = Math.max(parseInt(currentQuantity, 10) - 1, 0);
-
-                // Update the quantity in the database
-                itemRef.update({
-                    quantity: newQuantity
-                });
+                updateQuantity(itemKey, Math.max(parseInt(currentQuantity, 10) - 1, 0));
             });
         }
 
-        // Function to increment the quantity
         function incrementQuantity(itemKey) {
             const itemRef = database.ref(`inventory/${itemKey}`);
-            itemRef.once('value').then(function(snapshot) {
+            itemRef.once('value').then(snapshot => {
                 const currentQuantity = snapshot.val().quantity;
-                const newQuantity = parseInt(currentQuantity, 10) + 1;
-
-                // Update the quantity in the database
-                itemRef.update({
-                    quantity: newQuantity
-                });
+                updateQuantity(itemKey, parseInt(currentQuantity, 10) + 1);
             });
         }
 
-        // Function to delete an item
         function deleteItem(itemKey) {
-            // Remove the item from the database
             database.ref(`inventory/${itemKey}`).remove();
         }
 
-        // Function to populate category filter options
         function populateCategoryFilterOptions(snapshot) {
-            const categoryFilter = document.getElementById('categoryFilter');
-            const categories = new Set(); // Using a Set to ensure unique categories
+    const categoryFilter = getById('categoryFilter');
+    const categories = ['All']; // Initialize with 'All' as the default option
 
-            snapshot.forEach(function(childSnapshot) {
-                const category = childSnapshot.val().category;
-                categories.add(category);
-            });
-
-            // Clear existing options
-            categoryFilter.innerHTML = '<option value="All">All</option>';
-
-            // Add categories to the filter dropdown
-            categories.forEach(function(category) {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categoryFilter.appendChild(option);
-            });
+    snapshot.forEach(childSnapshot => {
+        const category = childSnapshot.val().category;
+        if (!categories.includes(category)) {
+            categories.push(category);
         }
+    });
 
-        // Function to filter items by category
+    categoryFilter.innerHTML = '';
+
+    categories.forEach(category => {
+        const option = createElement('option', '', category);
+        categoryFilter.appendChild(option);
+    });
+}
+
+
+
         function filterByCategory(category) {
-            const inventoryList = document.getElementById('inventoryList');
-            const items = inventoryList.getElementsByClassName('inventoryItem');
+    const inventoryList = getById('inventoryList');
+    const items = inventoryList.getElementsByClassName('inventoryItem');
 
-            for (const item of items) {
-                const itemCategory = item.querySelector('.category').textContent;
-                if (category === 'All' || itemCategory === category) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            }
+    for (const item of items) {
+        const itemCategory = item.querySelector('.itemDetails .centered .category');
+        const displayedCategory = itemCategory ? itemCategory.textContent.trim() : '';
+
+        item.style.display = category === 'All' || displayedCategory === category ? 'flex' : 'none';
+    }
+}
+
+
+
+
+        function searchItems() {
+            const searchQuery = getValue('search');
+            const categoryFilter = getValue('categoryFilter');
+
+            database.ref('inventory').once('value', snapshot => {
+                displayItems(snapshot, searchQuery);
+                populateCategoryFilterOptions(snapshot);
+                displayGroceryList(snapshot);
+                filterByCategory(categoryFilter);
+            });
         }
 
-        // Listen for changes in items
-        database.ref('inventory').on('value', function(snapshot) {
-            // Display the items
+        function displayGroceryList(snapshot) {
+            const groceryList = getById('groceryList');
+            groceryList.innerHTML = "";
+            snapshot.forEach(childSnapshot => {
+                const item = childSnapshot.val();
+                const itemKey = childSnapshot.key;
+                if (item.quantity === 0) {
+                    appendElement(groceryList, createGroceryListItem(itemKey, item.itemName));
+                }
+            });
+        }
+        function createElement(tagName, className, textContent = '') {
+    const element = document.createElement(tagName);
+    if (className) {
+        element.className = className;
+    }
+    if (textContent) {
+        element.textContent = textContent;
+    }
+    return element;
+}
+
+        database.ref('inventory').on('value', snapshot => {
             displayItems(snapshot);
-            // Populate category filter options
             populateCategoryFilterOptions(snapshot);
-            // Display items with quantity 0 in the grocery list
             displayGroceryList(snapshot);
-            // Filter the items based on the selected category
-            const selectedCategory = document.getElementById('categoryFilter').value;
-            filterByCategory(selectedCategory);
+            filterByCategory(getValue('categoryFilter'));
         });
     </script>
 </head>
 <body>
     <h1>Jockisch Pantry</h1>
-
     <form onsubmit="handleFormSubmission(event)">
         <label for="itemName">Item Name:</label>
         <input type="text" id="itemName" required>
-
         <label for="quantity">Quantity:</label>
         <input type="number" id="quantity" required>
-
         <label for="category">Category:</label>
         <input type="text" id="category" required>
-
+        <label for="search">Search:</label>
+        <input type="text" id="search">
+        <button type="button" id="searchButton" onclick="searchItems()">Search</button>
         <button type="submit" class="submit">Add to Pantry</button>
     </form>
-
     <h2>Current Pantry Items</h2>
     <label for="categoryFilter">Filter by Category:</label>
     <select id="categoryFilter" onchange="filterByCategory(this.value)">
         <option value="All">All</option>
     </select>
     <ul id="inventoryList"></ul>
-
     <h2>Grocery List</h2>
     <ul id="groceryList"></ul>
 </body>
