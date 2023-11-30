@@ -14,120 +14,113 @@
             background-color: #273c75;
             color: white;
         }
-
+    
         form {
             margin-bottom: 20px;
         }
-
+    
         ul {
             list-style-type: none;
             padding: 0;
             color: #2f3640;
         }
-
+    
         li {
+            display: grid;
+            grid-template-columns: 1fr auto; /* Two columns: 1fr for item details, auto for buttons */
+            justify-content: space-between;
+            align-items: start;
             width: 90%;
-    background-color: #e7e7e7;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
-    margin: 5px 0; /* Adjust the margin as needed */
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 13px;
-    transition: transform 0.3s ease-in-out;
-}
-
-        li:hover {
-            transform: scale(1.02);
+            background-color: #e7e7e7;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
+            margin: 5px;
+            padding: 15px;
+            border-radius: 13px;
+            transition: transform 0.3s ease-in-out;
         }
-
+    
         button {
             cursor: pointer;
             border: none;
             border-radius: 10px;
             transition: background-color 0.3s ease-in-out;
+            ;
         }
-
-        .quantityButton, .deleteButton {
+    
+        .quantityButton,
+        .deleteButton {
             background-color: #34ace0;
             color: #2f3640;
             padding: 8px 15px;
-            margin-right: 5px;
+            margin: 2px;
         }
-
-        .quantityButton:hover, .deleteButton:hover {
+    
+        .quantityButton:hover,
+        .deleteButton:hover {
             background-color: #45a049;
         }
-
-        .submit, #searchButton {
+    
+        .submit,
+        #searchButton {
             background-color: #3498db;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
             color: #fff;
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 9px;
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease-in-out;
+            margin: 5px;
         }
-
-        .submit:hover, #searchButton:hover {
+    
+        .submit:hover,
+        #searchButton:hover {
             background-color: #2980b9;
         }
-
-        @media screen and (max-width: 600px) {
-            body {
-                max-width: none;
-                margin: 20px;
-            }
-
-            li {
-                flex-direction: column;
-            }
-
-            .quantityButton, .deleteButton {
-                margin: 5px;
-            }
-
-            input, select {
-                width: 90%;
-                padding: 10px;
-                border: 1px solid #ccc;
-                border-radius: 10px;
-                margin-bottom: 10px;
-                font-size: 16px;
-                margin-right: 20px;
-            }
+    
+        input,
+        select {
+            width: 90%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            margin-right: 20px;
         }
-
+    
+        
+        
         select {
             appearance: none;
             padding-right: 30px;
         }
-
+    
         select option {
             background-color: #ffffff;
             color: #494949;
         }
-
+    
         .itemDetails {
-    display: flex;
-    flex-direction: column;
-  
-}
+            display: flex;
+            flex-direction: column;
+           
+        }
+    
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
 
-.centered {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.buttons {
-    display: flex;
-    align-items: center;
-}
-
+        .groceryList {
+            align-items: center;
+           
+        }
     </style>
+    
+    
     <script>
  const firebaseConfig = {
   apiKey: "AIzaSyAZDobuoMC3TUknK5n5X75K2coZVGMvquk",
@@ -155,55 +148,6 @@
 
             clearForm();
         }
-function signUp() {
-    const email = getValue('email');
-    const password = getValue('password');
-
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(`User signed up: ${user.email}`);
-      })
-      .catch((error) => {
-        console.error(`Error signing up: ${error.message}`);
-      });
-  }
-
-  function login() {
-    const email = getValue('email');
-    const password = getValue('password');
-
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(`User logged in: ${user.email}`);
-      })
-      .catch((error) => {
-        console.error(`Error logging in: ${error.message}`);
-      });
-  }
-
-  function logout() {
-    firebase.auth().signOut()
-      .then(() => {
-        console.log('User signed out');
-      })
-      .catch((error) => {
-        console.error(`Error signing out: ${error.message}`);
-      });
-  }
-
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      console.log(`User is signed in: ${user.email}`);
-      getById('loginButton').style.display = 'none';
-      getById('logoutButton').style.display = 'block';
-    } else {
-      console.log('User is signed out');
-      getById('loginButton').style.display = 'block';
-      getById('logoutButton').style.display = 'none';
-    }
-  });
 
         function displayItems(snapshot, searchQuery = "") {
             const inventoryList = getById('inventoryList');
@@ -227,16 +171,16 @@ function signUp() {
     li.innerHTML = `
         <span class="itemDetails">
             <span class="itemName">${item.itemName}</span><br>
-            <span class="centered">
-                <span class="quantity">Qty: ${item.quantity}</span><br>
-                <span class="category">${item.category}</span>
+            <span class="quantity">Qty: ${item.quantity}</span><br>
+            <span class="category">${item.category}</span>
             </span>
         </span>
         <span class="buttons">
-            <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
-            <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>
             <button class="quantityButton" onclick="incrementQuantity('${itemKey}')">+</button>
-        </span>
+            <button class="quantityButton" onclick="decrementQuantity('${itemKey}')">-</button>          
+            <button class="deleteButton" onclick="deleteItem('${itemKey}')">Delete</button>
+
+            </span>
     `;
     return li;
 }
@@ -244,8 +188,9 @@ function signUp() {
         function createGroceryListItem(itemKey, itemName) {
             const li = createElement('li', 'groceryItem');
             li.innerHTML = `
-                <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
-                <label for="${itemKey}">${itemName}</label>
+            <label for="${itemKey}">${itemName}</label>
+            <input type="checkbox" id="${itemKey}" onchange="toggleCheckbox('${itemKey}')"/>
+
             `;
             return li;
         }
@@ -320,27 +265,52 @@ function signUp() {
     const items = inventoryList.getElementsByClassName('inventoryItem');
 
     for (const item of items) {
-        const itemCategory = item.querySelector('.itemDetails .centered .category');
+        const itemCategory = item.querySelector('.itemDetails  .category');
         const displayedCategory = itemCategory ? itemCategory.textContent.trim() : '';
 
         item.style.display = category === 'All' || displayedCategory === category ? 'flex' : 'none';
     }
 }
 
+function searchItems() {
+    const searchQuery = getValue('search');
+    const categoryFilter = getValue('categoryFilter');
 
-
-
-        function searchItems() {
-            const searchQuery = getValue('search');
-            const categoryFilter = getValue('categoryFilter');
-
-            database.ref('inventory').once('value', snapshot => {
-                displayItems(snapshot, searchQuery);
-                populateCategoryFilterOptions(snapshot);
-                displayGroceryList(snapshot);
-                filterByCategory(categoryFilter);
-            });
+    database.ref('inventory').once('value', snapshot => {
+        // Check if the search query is empty
+        if (searchQuery.trim() === '') {
+            // Clear the search box and display all items
+            clearSearchBox();
+            displayItems(snapshot);  // Display all items from the snapshot
+        } else {
+            // Display items based on the search query
+            displayItems(snapshot, searchQuery);
         }
+
+        // Populate category filter options and display grocery list
+        populateCategoryFilterOptions(snapshot);
+        displayGroceryList(snapshot);
+
+        // Filter by category if a category filter is selected
+        filterByCategory(categoryFilter);
+    });
+}
+
+// Function to clear the search box
+function clearSearchBox() {
+    document.getElementById('search').value = ''; 
+    location.reload();
+}
+
+// Example function to get the value of an input field
+function getValue(elementId) {
+    return document.getElementById(elementId).value;
+}
+
+// Example function to set the value of an input field
+function setValue(elementId, value) {
+    document.getElementById(elementId).value = value;
+}
 
         function displayGroceryList(snapshot) {
             const groceryList = getById('groceryList');
@@ -370,32 +340,32 @@ function signUp() {
             displayGroceryList(snapshot);
             filterByCategory(getValue('categoryFilter'));
         });
+
+        function navigateToGroceryList() {
+            window.location.href = 'grocery_list.html'; // Change to the actual file name of your grocery list page
+        }
+
     </script>
 </head>
 <body>
     <h1>Jockisch Pantry</h1>
     <form onsubmit="handleFormSubmission(event)">
-        <label for="email">Email:</label>
-<input type="email" id="email" required>
-
-<label for="password">Password:</label>
-<input type="password" id="password" required>
-
-<button type="button" id="loginButton" onclick="login()">Login</button>
-<button type="button" id="logoutButton" onclick="logout()" style="display:none;">Logout</button>
-        <label for="itemName">Item Name:</label>
-        <input type="text" id="itemName" required>
-        <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" required>
-        <label for="category">Category:</label>
-        <input type="text" id="category" required>
-        <label for="search">Search:</label>
-        <input type="text" id="search">
-        <button type="button" id="searchButton" onclick="searchItems()">Search</button>
+        <label for="itemName">Item Name:</label><br>
+        <input type="text" id="itemName" required><br>
+        <label for="quantity">Quantity:</label><br>
+        <input type="number" id="quantity" required><br>
+        <label for="category">Category:</label><br>
+        <input type="text" id="category" required><br>
         <button type="submit" class="submit">Add to Pantry</button>
     </form>
     <h2>Current Pantry Items</h2>
-    <label for="categoryFilter">Filter by Category:</label>
+    <button type="button" onclick="navigateToGroceryList()">Go to Grocery List</button><br>
+    <label for="search">Search:</label><br>
+    <input type="text" id="search"><br>
+    <button type="button" id="searchButton" onclick="searchItems()">Search</button>
+    <button type="button" id="clearSearch" onclick="clearSearchBox()">Clear</button>
+    <br>
+    <label for="categoryFilter">Filter by Category:</label><br>
     <select id="categoryFilter" onchange="filterByCategory(this.value)">
         <option value="All">All</option>
     </select>
