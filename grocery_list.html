@@ -37,17 +37,18 @@
     <h1>Grocery List</h1>
     <ul id="groceryList"></ul>
 
-    <script>
-        // Retrieve grocery list items from localStorage (assuming it was stored in localStorage)
-        const groceryListItems = JSON.parse(localStorage.getItem('groceryListItems')) || [];
+<script>
+    // Retrieve grocery list items from localStorage
+    const groceryListItems = JSON.parse(localStorage.getItem('groceryListItems')) || [];
 
-        // Display grocery list items
-        const groceryList = document.getElementById('groceryList');
-        groceryListItems.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = item;
-            groceryList.appendChild(li);
-        });
-    </script>
+    // Display grocery list items
+    const groceryList = document.getElementById('groceryList');
+    groceryListItems.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        groceryList.appendChild(li);
+    });
+</script>
+
 </body>
 </html>
