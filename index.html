@@ -134,11 +134,15 @@
         const app = firebase.initializeApp(firebaseConfig);
         const database = app.database();
 
-       function handleFormSubmission(event) {
+        function handleFormSubmission(event) {
     event.preventDefault();
     const itemName = getValue('itemName');
     const quantity = getValue('quantity');
     const category = getValue('category');
+    
+    // Log the form submission details to the console
+    console.log('Form submitted with:', itemName, quantity, category);
+
     const newItemRef = database.ref('inventory').push({ itemName, quantity, category });
 
     if (quantity === '0') {
@@ -148,12 +152,16 @@
         // Append the grocery list item to the grocery list on the index page
         appendElement(groceryList, groceryListItem);
 
+        // Log the item name to the console to check if this block is executed
+        console.log('Item with 0 quantity:', itemName);
+
         // Store the grocery list item in localStorage
         addToGroceryList(itemName);
     }
 
     clearForm();
 }
+
 
 // Function to add an item to the grocery list in localStorage
 function addToGroceryList(itemName) {
@@ -243,13 +251,30 @@ function addToGroceryList(itemName) {
             database.ref(`inventory/${itemKey}`).update({ quantity: newQuantity });
         }
 
-        function decrementQuantity(itemKey) {
-            const itemRef = database.ref(`inventory/${itemKey}`);
-            itemRef.once('value').then(snapshot => {
-                const currentQuantity = snapshot.val().quantity;
-                updateQuantity(itemKey, Math.max(parseInt(currentQuantity, 10) - 1, 0));
-            });
+function decrementQuantity(itemKey) {
+    const itemRef = database.ref(`inventory/${itemKey}`);
+    itemRef.once('value').then(snapshot => {
+        const currentQuantity = snapshot.val().quantity;
+        const newQuantity = Math.max(parseInt(currentQuantity, 10) - 1, 0);
+
+        // Check if the new quantity is 0
+        if (newQuantity === 0) {
+            const itemName = snapshot.val().itemName;
+
+            // Add the item to the grocery list on the index page
+            const groceryList = getById('groceryList');
+            const groceryListItem = createGroceryListItem(itemKey, itemName);
+            appendElement(groceryList, groceryListItem);
+
+            // Store the grocery list item in localStorage
+            addToGroceryList(itemName);
         }
+
+        // Update the quantity in the database
+        updateQuantity(itemKey, newQuantity);
+    });
+}
+
 
         function incrementQuantity(itemKey) {
             const itemRef = database.ref(`inventory/${itemKey}`);
