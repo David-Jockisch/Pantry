@@ -134,20 +134,39 @@
         const app = firebase.initializeApp(firebaseConfig);
         const database = app.database();
 
-        function handleFormSubmission(event) {
-            event.preventDefault();
-            const itemName = getValue('itemName');
-            const quantity = getValue('quantity');
-            const category = getValue('category');
-            const newItemRef = database.ref('inventory').push({ itemName, quantity, category });
+       function handleFormSubmission(event) {
+    event.preventDefault();
+    const itemName = getValue('itemName');
+    const quantity = getValue('quantity');
+    const category = getValue('category');
+    const newItemRef = database.ref('inventory').push({ itemName, quantity, category });
 
-            if (quantity === '0') {
-                const groceryList = getById('groceryList');
-                appendElement(groceryList, createGroceryListItem(newItemRef.key, itemName));
-            }
+    if (quantity === '0') {
+        const groceryList = getById('groceryList');
+        const groceryListItem = createGroceryListItem(newItemRef.key, itemName);
 
-            clearForm();
-        }
+        // Append the grocery list item to the grocery list on the index page
+        appendElement(groceryList, groceryListItem);
+
+        // Store the grocery list item in localStorage
+        addToGroceryList(itemName);
+    }
+
+    clearForm();
+}
+
+// Function to add an item to the grocery list in localStorage
+function addToGroceryList(itemName) {
+    // Retrieve existing grocery list items from localStorage
+    const existingGroceryListItems = JSON.parse(localStorage.getItem('groceryListItems')) || [];
+
+    // Add the new item to the grocery list
+    existingGroceryListItems.push(itemName);
+
+    // Store the updated grocery list items back in localStorage
+    localStorage.setItem('groceryListItems', JSON.stringify(existingGroceryListItems));
+}
+
 
         function displayItems(snapshot, searchQuery = "") {
             const inventoryList = getById('inventoryList');
