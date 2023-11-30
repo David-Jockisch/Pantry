@@ -160,13 +160,16 @@ function addToGroceryList(itemName) {
     // Retrieve existing grocery list items from localStorage
     const existingGroceryListItems = JSON.parse(localStorage.getItem('groceryListItems')) || [];
 
-    // Add the new item to the grocery list
-    existingGroceryListItems.push(itemName);
+    // Add the new item to the grocery list only if it doesn't already exist
+    if (!existingGroceryListItems.includes(itemName)) {
+        existingGroceryListItems.push(itemName);
 
-    // Store the updated grocery list items back in localStorage
-    localStorage.setItem('groceryListItems', JSON.stringify(existingGroceryListItems));
+        // Store the updated grocery list items back in localStorage
+        localStorage.setItem('groceryListItems', JSON.stringify(existingGroceryListItems));
 
-     console.log('Updated Grocery List Items:', existingGroceryListItems);
+        // Log the updated grocery list items to the console
+        console.log('Updated Grocery List Items:', existingGroceryListItems);
+    }
 }
 
 
