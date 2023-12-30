@@ -15,10 +15,6 @@
             color: white;
         }
     
-        form {
-            margin-bottom: 20px;
-        }
-    
         ul {
             list-style-type: none;
             padding: 0;
@@ -27,7 +23,6 @@
     
         li {
             display: grid;
-            grid-template-columns: 1fr auto; /* Two columns: 1fr for item details, auto for buttons */
             justify-content: space-between;
             align-items: start;
             width: 90%;
@@ -67,13 +62,23 @@
             color: #fff;
             padding: 10px 20px;
             border: none;
-            border-radius: 9px;
+            border-radius: 13px;
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease-in-out;
             margin: 5px;
         }
     
+        #clearSearch {
+            background-color: #687075;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.582);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 13px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
         .submit:hover,
         #searchButton:hover {
             background-color: #2980b9;
@@ -84,13 +89,13 @@
             width: 90%;
             padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            border-radius: 13px;
+            margin-bottom: 18px;
+            margin-top: 5px;
             font-size: 16px;
             margin-right: 20px;
         }
     
-        
         
         select {
             appearance: none;
@@ -103,21 +108,18 @@
         }
     
         .itemDetails {
-            display: flex;
+            display: grid;
             flex-direction: column;
+            margin: 5px;
            
         }
     
         .buttons {
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
         }
 
-        .groceryList {
-            align-items: center;
-           
-        }
+
     </style>
     
     
@@ -140,8 +142,6 @@
     const quantity = getValue('quantity');
     const category = getValue('category');
     
-    // Log the form submission details to the console
-    console.log('Form submitted with:', itemName, quantity, category);
 
     const newItemRef = database.ref('inventory').push({ itemName, quantity, category });
 
@@ -152,11 +152,6 @@
         // Append the grocery list item to the grocery list on the index page
         appendElement(groceryList, groceryListItem);
 
-        // Log the item name to the console to check if this block is executed
-        console.log('Item with 0 quantity:', itemName);
-
-        // Store the grocery list item in localStorage
-        addToGroceryList(itemName);
     }
 
     clearForm();
@@ -407,20 +402,22 @@ function setValue(elementId, value) {
         <input type="text" id="category" required><br>
         <button type="submit" class="submit">Add to Pantry</button>
     </form>
+    <p><a href="#groceryList" style="color: white;">Jump to Grocery List</a></p>
     <h2>Current Pantry Items</h2>
-    <!-- Deactivated the Grocery list button for now, but left the functionality in place
-    <button type="button" onclick="navigateToGroceryList()">Go to Grocery List</button><br>-->
+
     <label for="search">Search:</label><br>
     <input type="text" id="search"><br>
     <button type="button" id="searchButton" onclick="searchItems()">Search</button>
     <button type="button" id="clearSearch" onclick="clearSearchBox()">Clear</button>
     <br>
-    <label for="categoryFilter">Filter by Category:</label><br>
+    <label for="categoryFilter">Filter by Category:</label>
     <select id="categoryFilter" onchange="filterByCategory(this.value)">
         <option value="All">All</option>
     </select>
     <ul id="inventoryList"></ul>
     <h2>Grocery List</h2>
     <ul id="groceryList"></ul>
+    <a href="#" style="color: white"; id="scrollTopLink">Go to Top</a>
+
 </body>
 </html>
