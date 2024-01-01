@@ -399,15 +399,16 @@ function setValue(elementId, value) {
         <label for="quantity">Quantity:</label><br>
         <input type="number" id="quantity" required><br>
         <label for="category">Category:</label><br>
-        <select>
+        <select id="category">
             <option></option>
             <option>Canned</option>
             <option>Frozen</option>
             <option>Boxed</option>
-            <option>Seasonings</option></options>
+            <option>Seasonings</option>
             <option>Cold</option>
             <option>Snacks</option>
         </select><br>
+        
         <button type="submit" class="submit">Add to Pantry</button>
     </form>
     <p><a href="#groceryList" style="color: white;">Jump to Grocery List</a></p>
@@ -419,9 +420,16 @@ function setValue(elementId, value) {
     <button type="button" id="clearSearch" onclick="clearSearchBox()">Clear</button>
     <br>
     <label for="categoryFilter">Filter by Category:</label>
-    <select id="categoryFilter" onchange="filterByCategory(this.value)">
-        <option value="All">All</option>
-    </select>
+<select id="categoryFilter" onchange="filterByCategory(this.value)">
+    <option value="All">All</option>
+    <option value="Canned">Canned</option>
+    <option value="Frozen">Frozen</option>
+    <option value="Boxed">Boxed</option>
+    <option value="Seasonings">Seasonings</option>
+    <option value="Cold">Cold</option>
+    <option value="Snacks">Snacks</option>
+</select>
+
     <ul id="inventoryList"></ul>
     <h2>Grocery List</h2>
     <ul id="groceryList"></ul>
