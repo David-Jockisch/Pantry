@@ -397,7 +397,7 @@ function setValue(elementId, value) {
         <label for="itemName">Item Name:</label><br>
         <input type="text" id="itemName" required><br>
         <label for="quantity">Quantity:</label><br>
-        <input type="number" id="quantity" required><br>
+        <input pattern="[0-9]" id="quantity" required><br>
         <label for="category">Category:</label><br>
         <input type="text" id="category" required><br>
         <button type="submit" class="submit">Add to Pantry</button>
